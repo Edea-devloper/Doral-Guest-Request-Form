@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "guest-request-client-side-solution",
+    "id": "2ce06bd7-a6d5-4e25-9ad0-4234fa1a7dcf",
+    "version": "1.0.0.4",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "GuestRequest description"
+      },
+      "longDescription": {
+        "default": "GuestRequest description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "guest-request Feature",
+        "description": "The feature that activates elements of the guest-request solution.",
+        "id": "6d7e2fad-5e0e-4b8a-a164-d866d09da69b",
+        "version": "1.0.0.4"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/guest-request.sppkg"
+  }
+}

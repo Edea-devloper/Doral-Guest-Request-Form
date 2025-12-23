@@ -1,0 +1,47 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "guest-request-form-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/guestRequestForm/GuestRequestFormWebPart.js",
+          "manifest": "./src/webparts/guestRequestForm/GuestRequestFormWebPart.manifest.json"
+        }
+      ]
+    },
+    "guest-request-from-dashboard-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/guestRequestFromDashboard/GuestRequestFromDashboardWebPart.js",
+          "manifest": "./src/webparts/guestRequestFromDashboard/GuestRequestFromDashboardWebPart.manifest.json"
+        }
+      ]
+    },
+    "guest-info-dashboard-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/guestInfoDashboard/GuestInfoDashboardWebPart.js",
+          "manifest": "./src/webparts/guestInfoDashboard/GuestInfoDashboardWebPart.manifest.json"
+        }
+      ]
+    },
+    "guest-dashboard-department-wise-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/guestDashboardDepartmentWise/GuestDashboardDepartmentWiseWebPart.js",
+          "manifest": "./src/webparts/guestDashboardDepartmentWise/GuestDashboardDepartmentWiseWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "GuestRequestFormWebPartStrings": "lib/webparts/guestRequestForm/loc/{locale}.js",
+    "PropertyControlStrings": "node_modules/@pnp/spfx-property-controls/lib/loc/{locale}.js",
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
+    "GuestRequestFromDashboardWebPartStrings": "lib/webparts/guestRequestFromDashboard/loc/{locale}.js",
+    "GuestInfoDashboardWebPartStrings": "lib/webparts/guestInfoDashboard/loc/{locale}.js",
+    "GuestDashboardDepartmentWiseWebPartStrings": "lib/webparts/guestDashboardDepartmentWise/loc/{locale}.js"
+  }
+}
