@@ -24,6 +24,8 @@ export interface IGuestRequestFormWebPartProps {
   ContactListName: string;
   DepartmentColumnName:string;
   DashboardUrl:string;
+  dashboardTitle:string;
+  PurposeOfRequestTemplate:string;
 }
 
 export default class GuestRequestFormWebPart extends BaseClientSideWebPart<IGuestRequestFormWebPartProps> {
@@ -48,7 +50,9 @@ export default class GuestRequestFormWebPart extends BaseClientSideWebPart<IGues
         ContactListSite: this.properties.ContactListSite,
         DepartmentColumnName:this.properties.DepartmentColumnName,
         DashboardUrl:this.properties.DashboardUrl,
-        context: this.context
+        context: this.context,
+        dashboardTitle:this.properties.dashboardTitle,
+        PurposeOfRequestTemplate:this.properties.PurposeOfRequestTemplate
       }
     );
 
@@ -431,6 +435,23 @@ export default class GuestRequestFormWebPart extends BaseClientSideWebPart<IGues
                 PropertyPaneTextField('DashboardUrl', {
                   label: "Dashboard Url",
                   value: this.properties.DashboardUrl
+                }),
+                PropertyPaneTextField('dashboardTitle', {
+                  label: "Dashboard Title",
+                  value: this.properties.dashboardTitle
+                }),
+                PropertyFieldListPicker('PurposeOfRequestTemplate', {
+                  label: 'Select a Purpose Of Request Template List',
+                  selectedList: this.properties.PurposeOfRequestTemplate,
+                  includeHidden: false,
+                  orderBy: PropertyFieldListPickerOrderBy.Title,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
+                  properties: this.properties,
+                  context: this.context as any,
+                  key: 'guestInfoListPicker',
+                  disabled: false,
+                  onGetErrorMessage: null as any,
+                  deferredValidationTime: 0
                 })
               ]
             }

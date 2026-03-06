@@ -140,58 +140,65 @@ export const updateItemsStatusByListId = async (
     listId: string,
     itemIds: number[],
     statusValue: string,
-    cacheList: string,Dept:string
+    cacheList: string, Dept: string
 ): Promise<void> => {
 
     if (!itemIds || itemIds.length === 0) return;
 
-    const sp = getSP(context);
+    const currentUserName = context.pageContext.user.displayName; 
+    const currentDateTime = new Date();
 
-    for (const id of itemIds) {
+    const sp = getSP(context);
+    if (statusValue != "send") {
+        for (const id of itemIds) {
+            await sp.web.lists
+                .getById(listId)
+                .items
+                .getById(id)
+                .update({
+                    Status: statusValue,
+                    ApproveRejectBy: currentUserName,
+                    DateOfCurrentStatus: currentDateTime,
+                });
+        }
+    }
+    if (statusValue == "send") {
         await sp.web.lists
-            .getById(listId)
+            .getById(cacheList)
             .items
-            .getById(id)
-            .update({
-                Status: statusValue
+            .add({
+                IDs: itemIds.toString(), Department: Dept
             });
     }
-
-    await sp.web.lists
-        .getById(cacheList)
-        .items
-        .add({
-            IDs: itemIds.toString(),Department:Dept
-        });
 
 };
 
 export const getDepartmentForCurrentUser = async (
-  context: any,
-  departmentListId: string
+    context: any,
+    departmentListId: string
 ): Promise<string> => {
-  const sp = getSP(context);
+    const sp = getSP(context);
 
-  try {
-    // Get current user
-    const currentUser = await sp.web.currentUser();
-    const userId = currentUser.Id;
+    try {
+        // Get current user
+        const currentUser = await sp.web.currentUser();
+        const userId = currentUser.Id;
 
-    // Get all department items with Manager column
-    const items = await sp.web.lists
-      .getById(departmentListId)
-      .items.select("Title", "Manager/Id")
-      .expand("Manager")();
+        // Get all department items with Manager column
+        const items = await sp.web.lists
+            .getById(departmentListId)
+            .items.select("Title", "Manager/Id")
+            .expand("Manager")();
 
-    // Check if current user is in Manager column (multi-people)
-    const deptItem = items.find(item => 
-      item.Manager?.some((mgr: any) => mgr.Id === userId)
-    );
+        // Check if current user is in Manager column (multi-people)
+        const deptItem = items.find(item =>
+            item.Manager?.some((mgr: any) => mgr.Id === userId)
+        );
 
-    return deptItem ? deptItem.Title : "NoDept";
+        return deptItem ? deptItem.Title : "NoDept";
 
-  } catch (error) {
-    console.error("Error fetching department:", error);
-    return "NoDept";
-  }
+    } catch (error) {
+        console.error("Error fetching department:", error);
+        return "NoDept";
+    }
 };

@@ -35,7 +35,7 @@ export const Links = ({
                             src={require("../../../../images/download.svg")}
                             alt=""
                         />
-                        {getLocalizedString("ExportToExcelText")}
+                        {getLocalizedString("ExportToExcelText_He")}
                     </button>
                 </div>
                 <div className="dash_btn print_btn" style={{display: 'none'}}>

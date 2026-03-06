@@ -32,6 +32,30 @@ export const TableFooter = ({
     const prevArrow = arrowLeft;
     const nextArrow = arrowRight;
 
+    const getVisiblePages = () => {
+        const visible: number[] = [];
+        const max = pagesCount;
+
+        if (max <= 7) {
+            return Array.from({ length: max }, (_, i) => i + 1);
+        }
+
+        visible.push(1);
+
+        if (page > 3) visible.push(-1); // "..."
+
+        for (let i = Math.max(2, page - 1); i <= Math.min(max - 1, page + 1); i++) {
+            visible.push(i);
+        }
+
+        if (page < max - 2) visible.push(-1); // "..."
+
+        visible.push(max);
+
+        return visible;
+    };
+
+
     return (
         <div className="dash_bottom">
             <div className="dash_btmLeft">
@@ -59,7 +83,7 @@ export const TableFooter = ({
                     </a>
                 </p>
             </div>
-            <div className="dash_btmRight" style={{flexDirection: getDirection() === "rtl" ? "row-reverse" : "row" }}>
+            <div className="dash_btmRight" style={{ flexDirection: getDirection() === "rtl" ? "row-reverse" : "row" }}>
                 <a
                     href="#"
                     className="next"
@@ -70,7 +94,7 @@ export const TableFooter = ({
                     <img src={prevArrow} alt="" />
                     {getLocalizedString("PrevPageText_He")}
                 </a>
-                {Array.from({ length: pagesCount }, (_, i) => (
+                {/* {Array.from({ length: pagesCount }, (_, i) => (
                     <a
                         key={i}
                         href="#"
@@ -81,7 +105,22 @@ export const TableFooter = ({
                     >
                         {i + 1}
                     </a>
-                ))}
+                ))} */}
+                {getVisiblePages().map((p, idx) =>
+                    p === -1 ? (
+                        <span key={idx} className="dots" style={{paddingRight: '6px'}}>...</span>
+                    ) : (
+                        <a
+                            key={idx}
+                            href="#"
+                            className={p === page ? "active" : ""}
+                            onClick={() => handleChangePage(p)}
+                        >
+                            {p}
+                        </a>
+                    )
+                )}
+
                 <a
                     href="#"
                     className="prev"

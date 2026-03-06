@@ -38,7 +38,8 @@ export const saveListItem = async (
   formData: any,
   stepOrder: number,
   ApprovalConfig: any,
-  itemId?: number
+  itemId?: number,
+  approvedBy?: string
 ): Promise<any> => {
   const _sp = getSP();
 
@@ -97,12 +98,21 @@ export const saveListItem = async (
     if (itemId) {
       // Update existing item
 
-      result = await _sp.web.lists.getById(listId).items.getById(itemId).update({ ...cleanedData, StepOrder: stepOrder, ApprovalConfig: ApprovalConfig, Status:statusValue });
+      const shouldSetRequester = (stepOrder === 2 || stepOrder === 3 || stepOrder === 4 || stepOrder === -1);
+
+      result = await _sp.web.lists.getById(listId).items.getById(itemId).update({
+        ...cleanedData,
+        StepOrder: stepOrder,
+        ApprovalConfig: ApprovalConfig,
+        Status: statusValue,
+        // RequestApproveRejectBy: approvedBy || ""
+        ...(shouldSetRequester && { RequestApproveRejectBy: approvedBy })
+      });
 
       return { success: true, action: "update", id: itemId, result };
     } else {
       // Add new item
-      result = await _sp.web.lists.getById(listId).items.add({ ...cleanedData, StepOrder: stepOrder, ApprovalConfig: ApprovalConfig, Status:statusValue });
+      result = await _sp.web.lists.getById(listId).items.add({ ...cleanedData, StepOrder: stepOrder, ApprovalConfig: ApprovalConfig, Status: statusValue });
 
       return { success: true, action: "add", id: result.data?.ID, result };
     }
@@ -295,6 +305,7 @@ export const getUserDepartment = async (
       if (!currentUserResp.ok) throw new Error("Failed to get current user");
       const currentUser = await currentUserResp.json();
       userEmail = currentUser?.Email;
+      console.log("currentUser: ", userEmail)
     }
 
     if (!userEmail) throw new Error("User email not found");
@@ -318,6 +329,7 @@ export const getUserDepartment = async (
     }
 
     const data = await response.json();
+    console.log("foundDepartmentArray", data)
 
     // ✅ Return department if found
     if (data.value && data.value.length > 0) {

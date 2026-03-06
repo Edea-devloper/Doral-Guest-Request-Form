@@ -15,15 +15,15 @@ export const useExportCsv = (
                         field.EntityPropertyName as keyof IBaseListItem
                     ] === "object"
                         ? ((
-                              row[
-                                  field.EntityPropertyName as keyof IBaseListItem
-                              ] as {
-                                  [k: string]: string;
-                              }
-                          )?.Title as string)
+                            row[
+                            field.EntityPropertyName as keyof IBaseListItem
+                            ] as {
+                                [k: string]: string;
+                            }
+                        )?.Title as string)
                         : (row[
-                              field.EntityPropertyName as keyof IBaseListItem
-                          ] as string);
+                            field.EntityPropertyName as keyof IBaseListItem
+                        ] as string);
             });
             return newRow;
         });
@@ -31,7 +31,11 @@ export const useExportCsv = (
             fields.map((f) => f.Title).join(","),
             ...preparedData.map((row) => Object.values(row).join(",")),
         ].join("\n");
-        const blob = new Blob([csv], { type: "text/csv; charset=utf-8;" });
+        // const blob = new Blob([csv], { type: "text/csv; charset=utf-8;" });
+        const BOM = "\uFEFF"; // UTF-8 BOM
+        const blob = new Blob([BOM + csv], {
+            type: "text/csv;charset=utf-8;"
+        });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;

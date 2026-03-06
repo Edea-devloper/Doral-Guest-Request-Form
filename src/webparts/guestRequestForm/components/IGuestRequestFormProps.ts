@@ -12,4 +12,6 @@ export interface IGuestRequestFormProps {
   DepartmentColumnName:string;
   DashboardUrl:string;
   GuestInfoListTemplate:string;
+  dashboardTitle:string;
+  PurposeOfRequestTemplate:string;
 }

@@ -3,6 +3,7 @@ import styles from './GuestRequestForm.module.scss';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import * as XLSX from 'xlsx';
 import { getGuestInfoItems } from '../Utility/utils';
+import Select from 'react-select';
 
 export interface IGuestInfoSectionProps {
     GuestInfoConfig: any[];
@@ -13,7 +14,7 @@ export interface IGuestInfoSectionProps {
     onGuestDataChange: (data: { rows: any[]; deletedIds: number[] }) => void;
     ShowValidation: boolean;
     defaultRows: any[];
-    ViewMode:boolean;
+    ViewMode: boolean;
 }
 
 const GuestInfoSection: React.FC<IGuestInfoSectionProps> = ({
@@ -21,7 +22,7 @@ const GuestInfoSection: React.FC<IGuestInfoSectionProps> = ({
     GuestInfoList,
     parentFormId,
     isEditMode = false,
-    context, defaultRows,ViewMode,
+    context, defaultRows, ViewMode,
     onGuestDataChange, ShowValidation
 }) => {
     const [rows, setRows] = React.useState<any[]>([{}]);
@@ -158,22 +159,95 @@ const GuestInfoSection: React.FC<IGuestInfoSectionProps> = ({
         const value = rows[rowIndex]?.[key] || '';
         const placeholder = field.placeholder || field.title || '';
 
+        const options =
+            field.options?.map((opt: any) => ({
+                value: opt,
+                label: opt
+            })) || [];
+
         switch ((field.columnType || '').toLowerCase()) {
             case 'choice':
                 return (
-                    <> <select
-                        className={styles.tableSelect} disabled={ViewMode}
-                        value={value}
-                        onChange={(e) => handleChange(rowIndex, key, e.target.value)}
-                        required={field.isfieldrequired}
-                    >
-                        <option value="">בחר...</option>
-                        {field.options?.map((opt: any, i: number) => (
-                            <option key={i} value={opt}>
-                                {opt}
-                            </option>
-                        ))}
-                    </select>{ShowValidation && field.isfieldrequired && value == "" ? <><span style={{ color: 'red', textAlign: 'right', direction: 'rtl', float: 'right' }}>שדה חובה</span></> : ""}</>
+                    // <> <select
+                    //     className={styles.tableSelect} disabled={ViewMode}
+                    //     value={value}
+                    //     onChange={(e) => handleChange(rowIndex, key, e.target.value)}
+                    //     required={field.isfieldrequired}
+                    // >
+                    //     <option value="">בחר...</option>
+                    //     {field.options?.map((opt: any, i: number) => (
+                    //         <option key={i} value={opt}>
+                    //             {opt}
+                    //         </option>
+                    //     ))}
+                    // </select>
+                    // {ShowValidation && field.isfieldrequired && value == "" ? 
+                    //         <><span style={{ color: 'red', textAlign: 'right', direction: 'rtl', float: 'right' }}>שדה חובה</span></>
+                    //          : ""}
+                    // </>
+                    <>
+                        <Select
+                            className={styles.tableSelect}
+                            styles={{
+                                control: (base: any, state: any) => ({
+                                    ...base,
+                                    border: 'none',
+                                    boxShadow: 'none',
+                                    backgroundColor: 'transparent', // 👈 change background here
+                                    minHeight: '36px',
+
+                                    '&:hover': {
+                                        border: '2px solid #6574cd',
+                                        borderRadius:'12px'
+                                    }
+                                }),
+                                valueContainer: (base: any) => ({
+                                    ...base,
+                                    padding: '6px 12px'
+                                }),
+                                input: (base: any) => ({
+                                    ...base,
+                                    margin: 0,
+                                    padding: 0
+                                }),
+                                indicatorSeparator: () => ({
+                                    display: 'none'
+                                }),
+                                dropdownIndicator: (base: any) => ({
+                                    ...base,
+                                    padding: '4px'
+                                }),
+                                menu: (base: any) => ({
+                                    ...base,
+                                    zIndex: 9999,
+                                    fontFamily: 'Rubik, Arial, sans-serif',
+                                })
+                            }}
+                            isDisabled={ViewMode}
+                            value={options.find((o: any) => o.value === value) || null}
+                            options={options}
+                            placeholder="בחר..."
+                            onChange={(selected: any) =>
+                                handleChange(rowIndex, key, selected?.value || "")
+                            }
+                            isSearchable={true}
+                            isClearable={true}//{!field.isfieldrequired}
+                            menuPortalTarget={document.body}
+                        />
+
+                        {ShowValidation && field.isfieldrequired && value == "" && (
+                            <span
+                                style={{
+                                    color: 'red',
+                                    textAlign: 'right',
+                                    direction: 'rtl',
+                                    float: 'right'
+                                }}
+                            >
+                                שדה חובה
+                            </span>
+                        )}
+                    </>
                 );
             case 'email':
                 return (
@@ -202,9 +276,9 @@ const GuestInfoSection: React.FC<IGuestInfoSectionProps> = ({
 
                 if (isCorporateEmail) {
                     if (
-                        !valueTrimmed ||                       
-                        !emailPattern.test(valueTrimmed) ||   
-                        publicDomainPattern.test(valueTrimmed) 
+                        !valueTrimmed ||
+                        !emailPattern.test(valueTrimmed) ||
+                        publicDomainPattern.test(valueTrimmed)
                     ) {
                         isInvalidEmail = true;
                     }
@@ -237,7 +311,7 @@ const GuestInfoSection: React.FC<IGuestInfoSectionProps> = ({
                                 שדה חובה
                             </span>
                         )} */}
-                        {(ShowValidation && field.columnType?.toLowerCase() !== "email" && field.isfieldrequired && value == "") || showError? <><span style={{ color: 'red', textAlign: 'right', direction: 'rtl', float: 'right' }}>שדה חובה</span></> : ""}
+                        {(ShowValidation && field.columnType?.toLowerCase() !== "email" && field.isfieldrequired && value == "") || showError ? <><span style={{ color: 'red', textAlign: 'right', direction: 'rtl', float: 'right' }}>{isInvalidEmail ? "אימייל לא חוקי" : " שדה חובה"}</span></> : ""}
                     </>
                 );
 

@@ -16,8 +16,7 @@
   "supportsThemeVariants": true,
 
   "preconfiguredEntries": [{
-    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Advanced
-    "group": { "default": "Advanced" },
+    "group": { "default": "Doral" },
     "title": { "default": "guest-request-from-dashboard" },
     "description": { "default": "guest-request-from-dashboard description" },
     "officeFabricIconFontName": "Page",

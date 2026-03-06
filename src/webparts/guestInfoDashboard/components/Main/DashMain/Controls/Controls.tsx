@@ -148,13 +148,17 @@ export const Controls = ({
                     />
 
                     <DatePicker
-                        placeholder="From Date"
+                        placeholder="מ"//"From Date"
+                        // label="מ"
+                        style={{width:'120px'}}
                         value={fromDate ?? undefined}
                         onSelectDate={(date) => setFromDate(date || null)}
                         formatDate={(date) => date?.toLocaleDateString("en-GB") ?? ""}
                     />
                     <DatePicker
-                        placeholder="To Date"
+                        placeholder="עד"//"To Date"
+                        // label="עד"
+                        style={{width:'120px'}}
                         value={toDate ?? undefined}
                         onSelectDate={(date) => setToDate(date || null)}
                         formatDate={(date) => date?.toLocaleDateString("en-GB") ?? ""}
@@ -208,7 +212,7 @@ export const Controls = ({
                                 marginBottom: '6px'
                             }}
                         >
-                            Apply Filter
+                            החל מסנן
                         </button>
                     </div>
 
@@ -281,7 +285,7 @@ export const Controls = ({
                                 marginBottom: '6px'
                             }}
                         >
-                            Clear Filter
+                            נקה מסנן
                         </button>
                     </div>
 

@@ -476,3 +476,9 @@
   height: 14px;
   padding-top: 3px;
 }
+
+.disabledBtn{
+  pointer-events: none; // stops hover + click
+  opacity: 0.6;
+  cursor: not-allowed;
+}

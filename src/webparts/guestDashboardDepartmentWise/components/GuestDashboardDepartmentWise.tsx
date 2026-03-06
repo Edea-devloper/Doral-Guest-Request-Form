@@ -2,6 +2,38 @@ import * as React from "react";
 import styles from "./GuestDashboardDepartmentWise.module.scss";
 import { deleteItemsByListId, getDepartmentForCurrentUser, getItemsByListId, updateItemsStatusByListId } from "../Utility/utils";
 import { Callout, DirectionalHint, Dropdown, IDropdownOption } from "@fluentui/react";
+import { TooltipHost } from "@fluentui/react";
+
+import { mergeStyleSets, DefaultButton, FocusTrapZone, Layer, Overlay, Popup } from '@fluentui/react';
+import { useBoolean } from '@fluentui/react-hooks';
+
+const popupStyles = mergeStyleSets({
+  root: {
+    background: '#3b37377a',
+    bottom: '0',
+    left: '0',
+    position: 'fixed',
+    right: '0',
+    top: '0',
+  },
+  content: {
+    background: 'white',
+    left: '50%',
+    maxWidth: '400px',
+    padding: '0 2em 2em',
+    position: 'absolute',
+    top: '50%',
+    transform: 'translate(-50%, -50%)',
+  },
+});
+
+const overlayStyles = {
+  root: {
+    backgroundColor: "rgba(0, 0, 0, 0.6)", // darker background
+    backdropFilter: "blur(2px)",           // optional blur
+  }
+};
+
 
 export interface IGuestDashboardDepartmentWiseProps {
   context: any;
@@ -28,6 +60,9 @@ const GuestDashboardDepartmentWise: React.FC<IGuestDashboardDepartmentWiseProps>
   const [searchText, setSearchText] = React.useState("");
   const [currectuserDept, setCurrectuserDept] = React.useState("");
   const [isUpdating, setIsUpdating] = React.useState(false);
+
+  const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
+
 
 
   const [columnFilters, setColumnFilters] = React.useState<{ [key: string]: string[]; }>({});
@@ -258,11 +293,41 @@ const GuestDashboardDepartmentWise: React.FC<IGuestDashboardDepartmentWiseProps>
   }, [selectedIds])
 
   const handleUpdateStatus = async (status: string) => {
-    if (selectedIds.length === 0) return;
+
+    // Decide target items
+    const targetItems =
+      status === "send"
+        ? listData
+        : listData?.filter(item => selectedIds?.includes(item?.Id));
+
+    // For non-send actions, require selection
+    if (status !== "send" && (!targetItems || targetItems.length === 0)) return;
+
+    const selectedItemsWithStatus = targetItems
+      ?.filter(item => selectedIds?.includes(item?.Id))
+      .map(item => ({
+        Id: item?.Id,
+        Status: item?.Status
+      }));
+
+    const hasMissingStatus = selectedItemsWithStatus?.some(i =>
+      !i?.Status || i?.Status?.trim() === ""
+    );
+
+    if (status == "send" && hasMissingStatus) {
+      alert("נא לסיים הזנת סטטוס לכל המשתמשים");
+      return;
+    }
+
+    //FINAL IDs to update
+    // const idsToUpdate = selectedItemsWithStatus.map(x => x.Id);
+    const idsToUpdate = status === "send" ? targetItems?.map(x => x.Id) : selectedIds;
+
 
     try {
       setIsUpdating(true); // show loader
-      await updateItemsStatusByListId(context, guestListId, selectedIds, status, cacheList, currectuserDept);
+      // await updateItemsStatusByListId(context, guestListId, selectedIds, status, cacheList, currectuserDept);
+      await updateItemsStatusByListId(context, guestListId, idsToUpdate, status, cacheList, currectuserDept);
       // Optionally reload data after update
       const allData = await getItemsByListId(guestListId, ["*"], context, mainListId);
       const filteredData =
@@ -277,6 +342,7 @@ const GuestDashboardDepartmentWise: React.FC<IGuestDashboardDepartmentWiseProps>
       setIsUpdating(false); // hide loader
     }
   };
+
 
   const handleDelete = async () => {
     if (selectedIds.length === 0) return;
@@ -408,6 +474,16 @@ const GuestDashboardDepartmentWise: React.FC<IGuestDashboardDepartmentWiseProps>
     return date.toLocaleDateString("en-US"); // MM/DD/YYYY
   };
 
+  const isEmptyStatus = (status: any): boolean => {
+    return !status || status?.toString()?.trim() === "";
+  };
+
+  const hasAnyEmptyStatus = React.useMemo(() => {
+    return filteredData?.some(item => isEmptyStatus(item?.Status));
+  }, [filteredData]);
+
+  const tooltipMessage =
+    "יש רשומות ללא סטטוס – יש להשלים לפני השליחה";
 
 
 
@@ -429,8 +505,31 @@ const GuestDashboardDepartmentWise: React.FC<IGuestDashboardDepartmentWiseProps>
           <a href={FormUrl} target="_blank" style={{ textDecoration: 'none' }}><button className={styles.btnCreate}><img src={require('../assets/plus.svg')} />הוסף טופס חדש</button></a>
         </div>
         <div className={styles.searchFilters}>
-          <div className={styles.dash_search}><input type="search" placeholder="Search" value={searchText} onChange={(e) => { setSearchText(e.target.value); setCurrentPage(1); }} /></div>
+          <div className={styles.dash_search}><input type="search" placeholder="חפש" value={searchText} onChange={(e) => { setSearchText(e.target.value); setCurrentPage(1); }} /></div>
           <div className={styles.appvalsBtns}>
+            {/* <button className={`${styles.btnApprove} ${hasAnyEmptyStatus ? styles.disabledBtn : ""}`} disabled={hasAnyEmptyStatus || isUpdating}
+              onClick={() => handleUpdateStatus("send")}> סיום ביקורת רבעונית ושליחה </button> */}
+
+
+            {hasAnyEmptyStatus ? (
+              <TooltipHost content={tooltipMessage}>
+                <div style={{ display: "inline-block" }}>
+                  <button
+                    className={`${styles.btnApprove} ${styles.disabledBtn}`}
+                    disabled
+                    onClick={() => handleUpdateStatus("send")}
+                  >
+                    סיום ביקורת רבעונית ושליחה
+                  </button>
+                </div>
+              </TooltipHost>
+            ) : (
+              <button className={`${styles.btnApprove} ${hasAnyEmptyStatus ? styles.disabledBtn : ""}`} disabled={hasAnyEmptyStatus || isUpdating}
+                onClick={showPopup}> סיום ביקורת רבעונית ושליחה </button>
+            )}
+
+
+
             <button className={styles.btnApprove}
               onClick={() => handleUpdateStatus("אישור")}><img src={require('../assets/check.svg')} />  אישור </button>
             <button className={styles.btnReject}
@@ -622,7 +721,7 @@ const GuestDashboardDepartmentWise: React.FC<IGuestDashboardDepartmentWiseProps>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={TableConfig?.length}>No records found</td>
+                    <td colSpan={TableConfig?.length}>לא נמצאו רשומות</td>
                   </tr>
                 )}
               </tbody>
@@ -679,12 +778,44 @@ const GuestDashboardDepartmentWise: React.FC<IGuestDashboardDepartmentWiseProps>
               הבא →
             </button>
           </div>
-
-
-
         </div>
-
       </div>
+      {
+        isPopupVisible && (
+          <Layer>
+            <Overlay styles={overlayStyles} onClick={hidePopup} />
+            <Popup
+              role="dialog"
+              aria-modal="true"
+              className={popupStyles.content}
+            >
+              <FocusTrapZone>
+                <h3 style={{ marginTop: "1rem" }}>אישור שליחה</h3>
+
+                <p>
+                  האם אתה בטוח שברצונך לבצע סיום ביקורת רבעונית ולשלוח את כל הרשומות?
+                </p>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                  <DefaultButton onClick={hidePopup}>
+                    ביטול
+                  </DefaultButton>
+
+                  <DefaultButton
+                    primary
+                    onClick={() => {
+                      hidePopup();
+                      handleUpdateStatus("send");
+                    }}
+                  >
+                    אישור ושליחה
+                  </DefaultButton>
+                </div>
+              </FocusTrapZone>
+            </Popup>
+          </Layer>
+        )
+      }
     </div>
   );
 };

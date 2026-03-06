@@ -25,8 +25,8 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
   GuestInfoList,
   GuestInfoConfig,
   PurposeOfRequestConfig,
-  ApprovalConfigData, ContactListSite, ContactListName, DepartmentColumnName, DashboardUrl, GuestInfoListTemplate,
-  context,
+  ApprovalConfigData, ContactListSite, ContactListName, DepartmentColumnName, DashboardUrl, GuestInfoListTemplate,PurposeOfRequestTemplate,
+  context,dashboardTitle
 }) => {
   const [FormID, setFormID] = React.useState<number | null>(null);
   const [stepOrderInitial, setstepOrderInitial] = React.useState<number>(1);
@@ -144,7 +144,7 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
   }, [list]);
 
   // Handle form save (main form + guest info)
-  const handleSave = async (stepOrder: number, ApprovalConfigVal: any) => {
+  const handleSave = async (stepOrder: number, ApprovalConfigVal: any, approvedBy?: string) => {
     // Combine all configurations
     const allConfigs = [
       ...(FormDetailsConfig || []),
@@ -240,7 +240,7 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
     setSaving(true);
     try {
       // Step 1: Save or update main form
-      const result = await saveListItem(list, formData, stepOrder, ApprovalConfigVal, FormID || undefined);
+      const result = await saveListItem(list, formData, stepOrder, ApprovalConfigVal, FormID || undefined, approvedBy);
       if (!result.success) throw new Error("Main form save failed");
 
       const savedFormId = result.result.ID;
@@ -326,14 +326,15 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
   const openPopup = (action: "approve" | "reject") => {
     setPopupAction(action);
     setPopupNote("");
-    setShowPopup(true);
+    action === "reject" ? setShowPopup(true) : handlePopupSubmit();
   };
 
   const handlePopupSubmit = () => {
-    if (popupAction === "reject" && !popupNote.trim()) {
-      alert("יש להזין הערה לפני דחייה");
-      return;
-    }
+    //Removed this logic as per uziya's request
+    // if (popupAction === "reject" && !popupNote.trim()) {
+    //   alert("יש להזין הערה לפני דחייה");
+    //   return;
+    // }
 
     const updatedApprovalConfig = ApprovalConfig.map((step: any) => {
       const stepOrderNum = Number(step.StepOrder);
@@ -369,6 +370,7 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
       return step;
     });
 
+    const currentUserName = context?.pageContext?.user?.displayName || "Unknown User";
 
     // 🧠 Update local state
     console.log("hfdisvgkdfv", updatedApprovalConfig);
@@ -378,7 +380,7 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
     const nextStep = popupAction === "approve" ? stepOrderInitial + 1 : -1;
 
     // 💾 Call your save function with serialized approval config
-    handleSave(nextStep, JSON.stringify(updatedApprovalConfig));
+    handleSave(nextStep, JSON.stringify(updatedApprovalConfig), currentUserName);
     setShowPopup(false);
   };
 
@@ -428,8 +430,10 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
     return JSON.stringify(updatedConfig);
   };
 
-
-
+const[DirectApprove,SetDirectApprove]=React.useState(false);
+React.useEffect(()=>{
+  setPopupAction("approve");
+},[DirectApprove])
 
 
   return (
@@ -441,7 +445,7 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
             טופס #{FormID == 0 ? (formData?.ID ? formData.ID.toString() : TempFormID) : FormID} <br /> {formDate}{" "}
           </div>
           <div className={styles.headerContent}>
-            <h1>פתיחת משתמש אורח (ספקים)</h1>
+            <h1>{dashboardTitle}</h1>
             <div className={styles.statusBadge}>
               <i className="fas fa-circle"></i> טופס חדש
             </div>
@@ -485,7 +489,7 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
             onFormDataChange={(updatedData) =>
               setFormData((prev: any) => ({ ...prev, ...updatedData }))
             }
-            ShowValidation={ShowValidation} ViewMode={ViewMode}
+            ShowValidation={ShowValidation} ViewMode={ViewMode} PurposeOfRequestTemplate={PurposeOfRequestTemplate}
           />
 
           {/* SECTION: תהליך אישורים */}
@@ -522,7 +526,7 @@ const GuestRequestForm: React.FC<IGuestRequestFormProps> = ({
           {(stepOrderInitial === 2 || stepOrderInitial === 3) && (
             <div className={styles.formActions}>
               <button
-                onClick={() => openPopup("approve")}
+                onClick={() => {SetDirectApprove(!DirectApprove);openPopup("approve");}}
                 disabled={saving}
                 className={`${styles.btn} ${styles.btnPrimary}`}
               >
